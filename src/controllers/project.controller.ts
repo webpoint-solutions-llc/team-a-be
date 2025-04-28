@@ -1,10 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Status } from "@prisma/client";
 import * as response from "../utils/response";
 import { createProjectSchema, updateProjectSchema } from "../schema";
 import { ZodError } from "zod";
-
-const prisma = new PrismaClient();
+import prisma from "../db/prisma";
 
 export const createProject = async (
   req: Request,
@@ -12,16 +11,62 @@ export const createProject = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    const userId = (req as any).user?.id;
+    let startDate: Date;
+    let endDate: Date;
+
+    if (!userId) {
+      return response.errorResponse(res, "Unauthorized.");
+    }
+
     const { title, description, kickoffDate, deadline, status } =
       createProjectSchema.parse(req.body);
+
+    try {
+      startDate = new Date(kickoffDate);
+      endDate = new Date(deadline);
+    } catch (error) {
+      return response.errorResponse(res, "Invalid date format.");
+    }
+    if (startDate > endDate) {
+      return response.errorResponse(
+        res,
+        "Kickoff date cannot be after deadline."
+      );
+    }
+
+    const existingProject = await prisma.project.findFirst({
+      where: { title },
+    });
+    if (existingProject) {
+      return response.errorResponse(
+        res,
+        "Project with this name already exists."
+      );
+    }
 
     const project = await prisma.project.create({
       data: {
         title,
         description,
-        kickoffDate: new Date(kickoffDate),
-        deadline: new Date(deadline),
+        kickoffDate: startDate,
+        deadline: endDate,
         status,
+      },
+    });
+
+    const role = await prisma.projectRole.create({
+      data: {
+        name: "Admin",
+        projectId: project.id,
+      },
+    });
+
+    await prisma.projectMember.create({
+      data: {
+        userId,
+        projectId: project.id,
+        roleId: role.id,
       },
     });
 
@@ -42,13 +87,54 @@ export const getProjects = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    const userId = (req as any).user?.id;
+    const query = req.params.query as string;
+    const search = query ? query.toLowerCase() : undefined;
+
+    if (!userId) {
+      return response.errorResponse(res, "Unauthorized.");
+    }
     const projects = await prisma.project.findMany({
       orderBy: { createdAt: "desc" },
+      where: {
+        projectMembers: {
+          some: {
+            userId,
+          },
+        },
+        title: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
     });
 
     return response.successResponse(res, "Projects fetched successfully.", {
       projects,
     });
+  } catch (error) {
+    console.error(error);
+    return response.errorResponse(res, "Internal server error.");
+  }
+};
+
+export const getArchivedProjects = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const projects = await prisma.project.findMany({
+      where: { status: "ARCHIVED" as Status },
+      orderBy: { createdAt: "desc" },
+    });
+    return response.successResponse(
+      res,
+      "Archived projects fetched successfully.",
+      {
+        projects,
+      }
+    );
   } catch (error) {
     console.error(error);
     return response.errorResponse(res, "Internal server error.");

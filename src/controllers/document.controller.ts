@@ -53,6 +53,61 @@ export const createDocument = async (
   }
 };
 
+export const getAllDocumentsOfProject = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { projectId } = req.params;
+    const query = req.query.query as string;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+    const search = query ? query.trim().toLowerCase() : undefined;
+
+    const whereClause: any = { projectId };
+
+    if (search) {
+      whereClause.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+        { tags: { contains: search, mode: "insensitive" } },
+        { link: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    const totalCount = await prisma.document.count({ where: whereClause });
+
+    const documents = await prisma.document.findMany({
+      where: whereClause,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    });
+
+    if (documents.length === 0 && page === 1) {
+      return response.errorResponse(
+        res,
+        "No documents found for this project."
+      );
+    }
+
+    return response.successResponse(res, "Documents fetched successfully.", {
+      data: documents,
+      pagination: {
+        total: totalCount,
+        page,
+        limit,
+        pages: Math.ceil(totalCount / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching documents:", error);
+    return response.errorResponse(res, "Internal server error.");
+  }
+};
+
 export const getDocumentsByCategory = async (
   req: Request,
   res: Response,
@@ -60,13 +115,33 @@ export const getDocumentsByCategory = async (
 ): Promise<void> => {
   try {
     const { categoryId } = req.params;
+    const query = req.query.query as string;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+    const search = query ? query.trim().toLowerCase() : undefined;
+
+    const whereClause: any = { categoryId };
+
+    if (search) {
+      whereClause.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+        { tags: { contains: search, mode: "insensitive" } },
+        { link: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    const totalCount = await prisma.document.count({ where: whereClause });
 
     const documents = await prisma.document.findMany({
-      where: { categoryId },
+      where: whereClause,
       orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
     });
 
-    if (documents.length === 0) {
+    if (documents.length === 0 && page === 1) {
       return response.errorResponse(
         res,
         "No documents found in this category."
@@ -75,9 +150,15 @@ export const getDocumentsByCategory = async (
 
     return response.successResponse(res, "Documents fetched successfully.", {
       data: documents,
+      pagination: {
+        total: totalCount,
+        page,
+        limit,
+        pages: Math.ceil(totalCount / limit),
+      },
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching documents by category:", error);
     return response.errorResponse(res, "Internal server error.");
   }
 };

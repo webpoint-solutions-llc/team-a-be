@@ -31,8 +31,8 @@ export const updateUserSchema = z.object({
 export const createProjectSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
-  kickoffDate: z.string().datetime().or(z.date()),
-  deadline: z.string().datetime().or(z.date()),
+  kickoffDate: z.string(),
+  deadline: z.string(),
   status: StatusEnum.optional().default("active"),
 });
 

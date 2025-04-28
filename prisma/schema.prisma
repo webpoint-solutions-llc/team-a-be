@@ -40,8 +40,8 @@ model ProjectRole {
   projectId      String          @db.Uuid
   projectMembers ProjectMember[]
 
-  @@unique([projectId, name]) // Ensure no duplicate roles for a project
-  @@map("project_roles") // Optional: maps to a specific table name
+  @@unique([projectId, name])
+  @@map("project_roles")
 }
 
 model ProjectMember {
@@ -54,8 +54,8 @@ model ProjectMember {
   roleId    String      @db.Uuid
   addedAt   DateTime    @default(now())
 
-  @@unique([userId, projectId]) // Ensures each user can be added to a project only once
-  @@map("project_members") // Optional: maps to a specific table name
+  @@unique([userId, projectId])
+  @@map("project_members")
 }
 
 model DocumentCategory {
@@ -66,8 +66,8 @@ model DocumentCategory {
   projectId   String     @db.Uuid
   documents   Document[]
 
-  @@unique([projectId, name]) // Ensure no duplicate categories for a project
-  @@map("document_categories") // Optional: maps to a specific table name
+  @@unique([projectId, name])
+  @@map("document_categories")
 }
 
 model Document {
@@ -75,8 +75,8 @@ model Document {
   title       String
   description String?              @db.Text
   link        String
-  tags        String?              @db.VarChar(255) // Store tags as a comma-separated string
-  visibility  String               @default("public") // 'public' or 'private'
+  tags        String?              @db.VarChar(255)
+  visibility  String               @default("public")
   createdBy   User                 @relation(fields: [createdById], references: [id])
   createdById String               @db.Uuid
   category    DocumentCategory     @relation(fields: [categoryId], references: [id])
@@ -85,7 +85,7 @@ model Document {
   updatedAt   DateTime             @updatedAt
   permissions DocumentPermission[]
 
-  @@map("documents") // Optional: maps to a specific table name
+  @@map("documents")
 }
 
 model DocumentPermission {
@@ -95,8 +95,8 @@ model DocumentPermission {
   user       User     @relation(fields: [userId], references: [id])
   userId     String   @db.Uuid
 
-  @@unique([documentId, userId]) // Ensure each permission is unique for document-user pair
-  @@map("document_permissions") // Optional: maps to a specific table name
+  @@unique([documentId, userId])
+  @@map("document_permissions")
 }
 
 enum Status {
