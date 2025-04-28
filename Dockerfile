@@ -17,6 +17,6 @@ COPY . .
 RUN npx prisma generate
 
 # Your app binds to port 3000 so you'll use the EXPOSE instruction
-EXPOSE 3000
+EXPOSE 5000
 
 CMD [ "npx", "ts-node", "src/server.ts" ]
