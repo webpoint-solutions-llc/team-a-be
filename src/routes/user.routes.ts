@@ -9,5 +9,4 @@ router.post("/register", uc.register);
 router.post("/me", uc.getMe);
 router.post("/logout", auth, uc.logout);
 
-
 export default router;

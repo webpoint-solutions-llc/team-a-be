@@ -10,8 +10,6 @@ import documentRoutes from "./routes/document.routes";
 import projectMemberRoutes from "./routes/project-member.routes";
 import documentPermissions from "./routes/document-permission.routes";
 
-import { auth } from "./middleware/auth.middleware";
-
 const app = express();
 
 app.use(express.json());
@@ -28,8 +26,6 @@ app.use(
 app.get("/", (req, res) => {
   res.send("Welcome to the API");
 });
-
-app.use(auth);
 
 app.use("/api/users", userRoutes);
 app.use("/api/projects", projectRoutes);

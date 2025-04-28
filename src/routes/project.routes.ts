@@ -6,13 +6,14 @@ import {
   updateProject,
   deleteProject,
 } from "../controllers/project.controller";
+import { auth } from "../middleware/auth.middleware";
 
 const router = Router();
 
-router.post("/", createProject);
-router.get("/", getProjects);
-router.get("/:id", getProjectById);
-router.put("/:id", updateProject);
-router.delete("/:id", deleteProject);
+router.post("/", auth, createProject);
+router.get("/", auth, getProjects);
+router.get("/:id", auth, getProjectById);
+router.put("/:id", auth, updateProject);
+router.delete("/:id", auth, deleteProject);
 
 export default router;

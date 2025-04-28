@@ -4,6 +4,7 @@ import * as generator from "../utils/generator";
 import { nodeEnv } from "../config";
 import prisma from "../db/prisma";
 import * as response from "../utils/response";
+import { ZodError } from "zod";
 
 export const register = async (
   req: Request,
@@ -65,21 +66,13 @@ export const login = async (
 
     const token = generator.generateJwt(user.email, user.id);
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: nodeEnv === "production",
-      sameSite: "lax",
-      path: "/",
-      expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
-    });
-
     return response.successResponse(res, "Logged in successfully.", {
-      id: user.id,
-      email: user.email,
-      fullName: user.fullName,
+      token,
     });
   } catch (error) {
-    console.error(error);
+    if (error instanceof ZodError) {
+      return response.zodErrorResponse(res, error);
+    }
     return response.errorResponse(res, "Internal server error.");
   }
 };
