@@ -6,8 +6,8 @@ on:
 env:
   CONTEXT_PATH: .
   DOCKER_PATH: ./Dockerfile
-  DOCKER_REGISTRY: docker.io
-  DOCKER_REPO: team-a
+  DOCKER_REGISTRY: sulavadk7
+  DOCKER_REPO: teamA
   IMAGE_NAME: be
 jobs:
   publish:
