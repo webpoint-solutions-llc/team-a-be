@@ -5,7 +5,11 @@ import { nodeEnv } from "../config";
 import prisma from "../db/prisma";
 import * as response from "../utils/response";
 
-export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const register = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { email, password, fullName } = req.body;
 
@@ -34,12 +38,15 @@ export const register = async (req: Request, res: Response, next: NextFunction):
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error." });
+    return response.errorResponse(res, "Internal server error.");
   }
 };
 
-
-export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { email, password } = req.body;
 
@@ -63,7 +70,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
       secure: nodeEnv === "production",
       sameSite: "lax",
       path: "/",
-      expires: new Date(Date.now() + 1000 * 60 * 60 * 24), // 1 day
+      expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
     });
 
     return response.successResponse(res, "Logged in successfully.", {
@@ -73,21 +80,29 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error." });
+    return response.errorResponse(res, "Internal server error.");
   }
 };
 
-export const logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const logout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     res.clearCookie("token");
     return response.successResponse(res, "Logged out successfully.");
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error." });
+    return response.errorResponse(res, "Internal server error.");
   }
 };
 
-export const getMe = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getMe = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const userId = (req as any).user?.id;
 
@@ -110,6 +125,6 @@ export const getMe = async (req: Request, res: Response, next: NextFunction): Pr
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error." });
+    return response.errorResponse(res, "Internal server error.");
   }
 };

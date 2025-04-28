@@ -8,6 +8,7 @@ import userRoutes from "./routes/user.routes";
 import documentCategoryRoutes from "./routes/document-category.routes";
 import documentRoutes from "./routes/document.routes";
 import projectMemberRoutes from "./routes/project-member.routes";
+import documentPermissions from "./routes/document-permission.routes";
 
 import { auth } from "./middleware/auth.middleware";
 
@@ -35,5 +36,6 @@ app.use("/api/projects", projectRoutes);
 app.use("/api/document-categories", documentCategoryRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/project-members", projectMemberRoutes);
+app.use("/api/document-permissions", documentPermissions);
 
 export default app;
