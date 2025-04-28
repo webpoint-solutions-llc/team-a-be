@@ -2,7 +2,7 @@ name: Build and Publish Image
 on:
   push:
     branches:
-      - dev
+      - dev2
 env:
   CONTEXT_PATH: .
   DOCKER_PATH: ./Dockerfile
@@ -31,7 +31,7 @@ jobs:
         with:
           
           images: |
-            "${{env.DOCKER_REGISTRY}}/${{secrets.DOCKER_USERNAME}}/${{ env.DOCKER_REPO }}"
+            "${{env.DOCKER_REGISTRY}}/${{secrets.DOCKER_USERNAME}}/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}"
           tags: |
             type=raw,value={{branch}}-sha-{{sha}}
 
