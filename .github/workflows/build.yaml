@@ -1,0 +1,46 @@
+name: Build and Publish Image
+on:
+  push:
+    branches:
+      - dev
+env:
+  CONTEXT_PATH: .
+  DOCKER_PATH: ./Dockerfile
+  DOCKER_REGISTRY: docker.io
+  DOCKER_REPO: team-a
+  IMAGE_NAME: be
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Docker login
+        run: |
+          echo ${{ secrets.DOCKER_TOKEN }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          
+          images: |
+            "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}"
+          tags: |
+            type=raw,value={{branch}}-sha-{{sha}}
+  
+            
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: ${{ env.CONTEXT_PATH }}
+          file: ${{ env.DOCKER_PATH }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
