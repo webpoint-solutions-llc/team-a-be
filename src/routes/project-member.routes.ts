@@ -8,8 +8,8 @@ import { auth } from "../middleware/auth.middleware";
 
 const router = express.Router();
 
-router.post("/project-members", auth, addProjectMember);
-router.get("/project-members/:projectId", auth, getProjectMembers);
-router.delete("/project-members/:projectId/:userId", auth, removeProjectMember);
+router.post("/", auth, addProjectMember);
+router.get("/:projectId", auth, getProjectMembers);
+router.delete("/:projectId/:userId", auth, removeProjectMember);
 
 export default router;

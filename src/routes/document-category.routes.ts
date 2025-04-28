@@ -4,30 +4,14 @@ import { auth } from "../middleware/auth.middleware";
 
 const router = Router();
 
-router.post(
-  "/document-categories",
-  auth,
-  documentCategoryController.createDocumentCategory
-);
+router.post("", auth, documentCategoryController.createDocumentCategory);
 router.get(
-  "/document-categories/project/:projectId",
+  "/project/:projectId",
   auth,
   documentCategoryController.getDocumentCategoriesByProject
 );
-router.get(
-  "/document-categories/:id",
-  auth,
-  documentCategoryController.getDocumentCategoryById
-);
-router.put(
-  "/document-categories/:id",
-  auth,
-  documentCategoryController.updateDocumentCategory
-);
-router.delete(
-  "/document-categories/:id",
-  auth,
-  documentCategoryController.deleteDocumentCategory
-);
+router.get("/:id", auth, documentCategoryController.getDocumentCategoryById);
+router.put("/:id", auth, documentCategoryController.updateDocumentCategory);
+router.delete("/:id", auth, documentCategoryController.deleteDocumentCategory);
 
 export default router;
