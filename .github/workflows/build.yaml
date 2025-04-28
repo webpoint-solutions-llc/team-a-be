@@ -6,7 +6,8 @@ on:
 env:
   CONTEXT_PATH: .
   DOCKER_PATH: ./Dockerfile
-  DOCKER_REPO: teamA
+  DOCKER_REGISTRY: docker.io
+  DOCKER_REPO: teama
   IMAGE_NAME: be
 jobs:
   publish:
@@ -30,7 +31,7 @@ jobs:
         with:
           
           images: |
-            "${{secrets.DOCKER_USERNAME}}/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}"
+            "${{env.DOCKER_REGISTRY}}/${{secrets.DOCKER_USERNAME}}/${{ env.DOCKER_REPO }}"
           tags: |
             type=raw,value={{branch}}-sha-{{sha}}
 
