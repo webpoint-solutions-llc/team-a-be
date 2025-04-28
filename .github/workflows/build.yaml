@@ -6,7 +6,7 @@ on:
 env:
   CONTEXT_PATH: .
   DOCKER_PATH: ./Dockerfile
-  DOCKER_REGISTRY: sulavadk7
+  DOCKER_REGISTRY: docker.io
   DOCKER_REPO: teamA
   IMAGE_NAME: be
 jobs:
@@ -31,7 +31,7 @@ jobs:
         with:
           
           images: |
-            "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}"
+            "${{ env.DOCKER_REGISTRY }}/${{env.DOCKER_USER}}/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}"
           tags: |
             type=raw,value={{branch}}-sha-{{sha}}
   
