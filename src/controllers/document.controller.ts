@@ -60,20 +60,46 @@ export const getAllDocumentsOfProject = async (
 ): Promise<void> => {
   try {
     const { projectId } = req.params;
+    const userId = (req as any).user?.id;
     const query = req.query.query as string;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
     const search = query ? query.trim().toLowerCase() : undefined;
 
-    const whereClause: any = { projectId };
+    const whereClause: any = {
+      categoryId: {
+        in: await prisma.documentCategory
+          .findMany({
+            where: { projectId },
+            select: { id: true },
+          })
+          .then((categories) => categories.map((cat) => cat.id)),
+      },
+    };
+
+    whereClause.OR = [
+      { visibility: "public" },
+      {
+        permissions: {
+          some: {
+            userId,
+          },
+        },
+      },
+      { createdById: userId },
+    ];
 
     if (search) {
-      whereClause.OR = [
-        { title: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
-        { tags: { contains: search, mode: "insensitive" } },
-        { link: { contains: search, mode: "insensitive" } },
+      whereClause.AND = [
+        {
+          OR: [
+            { title: { contains: search, mode: "insensitive" } },
+            { description: { contains: search, mode: "insensitive" } },
+            { tags: { contains: search, mode: "insensitive" } },
+            { link: { contains: search, mode: "insensitive" } },
+          ],
+        },
       ];
     }
 
@@ -84,12 +110,25 @@ export const getAllDocumentsOfProject = async (
       orderBy: { createdAt: "desc" },
       skip,
       take: limit,
+      include: {
+        category: {
+          select: {
+            name: true,
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            fullName: true,
+          },
+        },
+      },
     });
 
     if (documents.length === 0 && page === 1) {
       return response.errorResponse(
         res,
-        "No documents found for this project."
+        "No accessible documents found for this project."
       );
     }
 
@@ -115,6 +154,7 @@ export const getDocumentsByCategory = async (
 ): Promise<void> => {
   try {
     const { categoryId } = req.params;
+    const userId = (req as any).user?.id;
     const query = req.query.query as string;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
@@ -123,12 +163,28 @@ export const getDocumentsByCategory = async (
 
     const whereClause: any = { categoryId };
 
+    whereClause.OR = [
+      { visibility: "public" },
+      {
+        permissions: {
+          some: {
+            userId,
+          },
+        },
+      },
+      { createdById: userId },
+    ];
+
     if (search) {
-      whereClause.OR = [
-        { title: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
-        { tags: { contains: search, mode: "insensitive" } },
-        { link: { contains: search, mode: "insensitive" } },
+      whereClause.AND = [
+        {
+          OR: [
+            { title: { contains: search, mode: "insensitive" } },
+            { description: { contains: search, mode: "insensitive" } },
+            { tags: { contains: search, mode: "insensitive" } },
+            { link: { contains: search, mode: "insensitive" } },
+          ],
+        },
       ];
     }
 
@@ -139,12 +195,20 @@ export const getDocumentsByCategory = async (
       orderBy: { createdAt: "desc" },
       skip,
       take: limit,
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            fullName: true,
+          },
+        },
+      },
     });
 
     if (documents.length === 0 && page === 1) {
       return response.errorResponse(
         res,
-        "No documents found in this category."
+        "No accessible documents found in this category."
       );
     }
 

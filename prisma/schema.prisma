@@ -76,7 +76,7 @@ model Document {
   description String?              @db.Text
   link        String
   tags        String?              @db.VarChar(255)
-  visibility  String               @default("public")
+  visibility  Visibility           @default(public)
   createdBy   User                 @relation(fields: [createdById], references: [id])
   createdById String               @db.Uuid
   category    DocumentCategory     @relation(fields: [categoryId], references: [id])
@@ -103,4 +103,9 @@ enum Status {
   active
   completed
   archived
+}
+
+enum Visibility {
+  public
+  private
 }
