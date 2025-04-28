@@ -3,6 +3,10 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { frontendUrl } from "./config";
+import projectRoutes from "./routes/project.routes";
+import userRoutes from "./routes/user.routes";
+import documentCategoryRoutes from "./routes/document-category.routes";
+import { auth } from "./middleware/auth.middleware";
 
 const app = express();
 
@@ -17,6 +21,10 @@ app.use(
   })
 );
 
+app.use(auth);
 
+app.use("/api/users", userRoutes);
+app.use("/api/projects", projectRoutes);
+app.use("/api/document-categories", documentCategoryRoutes);
 
 export default app;
