@@ -31,7 +31,7 @@ jobs:
         with:
           
           images: |
-            "${{env.DOCKER_REGISTRY}}/${{secrets.DOCKER_USERNAME}}/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}"
+            "${{env.DOCKER_REGISTRY}}/${{secrets.DOCKER_USERNAME}}/${{ env.IMAGE_NAME }}"
           tags: |
             type=raw,value={{branch}}-sha-{{sha}}
 
