@@ -29,18 +29,17 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          
           images: |
             "${{ env.DOCKER_REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}"
           tags: |
             type=raw,value={{branch}}-sha-{{sha}}
 
-      - name: Docker build
-        run: |
-          docker build -t ${{ steps.meta.outputs.images }}:${{ steps.meta.outputs.tags }} .
-              
-  
-      - name: Docker push
-        run: |
-          docker push ${{ steps.meta.outputs.images }}:${{ steps.meta.outputs.tags }}
-        
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ${{ env.CONTEXT_PATH }}
+          file: ${{ env.DOCKER_PATH }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          
