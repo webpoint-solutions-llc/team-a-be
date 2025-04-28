@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import prisma from "../db/prisma";
 import * as response from "../utils/response";
+import { ZodError } from "zod";
 
 export const addDocumentPermission = async (
   req: Request,
@@ -39,12 +40,13 @@ export const addDocumentPermission = async (
       { documentPermission }
     );
   } catch (error) {
-    console.error(error);
+    if (error instanceof ZodError) {
+      return response.zodErrorResponse(res, error);
+    }
     response.errorResponse(res, "Internal server error.");
   }
 };
 
-// Get all permissions for a document
 export const getDocumentPermissions = async (
   req: Request,
   res: Response,
@@ -56,7 +58,7 @@ export const getDocumentPermissions = async (
     const permissions = await prisma.documentPermission.findMany({
       where: { documentId },
       include: {
-        user: true, // Include user details
+        user: true,
       },
     });
 
@@ -78,7 +80,6 @@ export const getDocumentPermissions = async (
   }
 };
 
-// Remove a permission from a document
 export const removeDocumentPermission = async (
   req: Request,
   res: Response,

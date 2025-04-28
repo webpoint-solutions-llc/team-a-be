@@ -1,12 +1,19 @@
 import { Request, Response, NextFunction } from "express";
 import { PrismaClient } from "@prisma/client";
 import * as response from "../utils/response";
+import { createProjectSchema, updateProjectSchema } from "../schema";
+import { ZodError } from "zod";
 
 const prisma = new PrismaClient();
 
-export const createProject = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const createProject = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const { title, description, kickoffDate, deadline, status } = req.body;
+    const { title, description, kickoffDate, deadline, status } =
+      createProjectSchema.parse(req.body);
 
     const project = await prisma.project.create({
       data: {
@@ -22,12 +29,18 @@ export const createProject = async (req: Request, res: Response, next: NextFunct
       project,
     });
   } catch (error) {
-    console.error(error);
+    if (error instanceof ZodError) {
+      return response.zodErrorResponse(res, error);
+    }
     return response.errorResponse(res, "Internal server error.");
   }
 };
 
-export const getProjects = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getProjects = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const projects = await prisma.project.findMany({
       orderBy: { createdAt: "desc" },
@@ -42,7 +55,11 @@ export const getProjects = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-export const getProjectById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getProjectById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { id } = req.params;
 
@@ -63,10 +80,15 @@ export const getProjectById = async (req: Request, res: Response, next: NextFunc
   }
 };
 
-export const updateProject = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const updateProject = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { id } = req.params;
-    const { title, description, kickoffDate, deadline, status } = req.body;
+    const { title, description, kickoffDate, deadline, status } =
+      updateProjectSchema.parse(req.body);
 
     const existingProject = await prisma.project.findUnique({ where: { id } });
 
@@ -89,12 +111,18 @@ export const updateProject = async (req: Request, res: Response, next: NextFunct
       project,
     });
   } catch (error) {
-    console.error(error);
+    if (error instanceof ZodError) {
+      return response.zodErrorResponse(res, error);
+    }
     return response.errorResponse(res, "Internal server error.");
   }
 };
 
-export const deleteProject = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const deleteProject = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { id } = req.params;
 

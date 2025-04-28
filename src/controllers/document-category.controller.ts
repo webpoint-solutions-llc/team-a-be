@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import { PrismaClient } from "@prisma/client";
 import * as response from "../utils/response";
 import prisma from "../db/prisma";
+import {
+  updateDocumentCategorySchema,
+  createDocumentCategorySchema,
+} from "../schema";
+import { ZodError } from "zod";
 
 export const createDocumentCategory = async (
   req: Request,
@@ -9,7 +13,9 @@ export const createDocumentCategory = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { projectId, name, description } = req.body;
+    const { projectId, name, description } = createDocumentCategorySchema.parse(
+      req.body
+    );
 
     const project = await prisma.project.findUnique({
       where: { id: projectId },
@@ -42,6 +48,9 @@ export const createDocumentCategory = async (
       data: documentCategory,
     });
   } catch (error) {
+    if (error instanceof ZodError) {
+      return response.zodErrorResponse(res, error);
+    }
     return response.errorResponse(res, "Internal server error.");
   }
 };
@@ -113,7 +122,7 @@ export const updateDocumentCategory = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const { name, description } = req.body;
+    const { name, description } = updateDocumentCategorySchema.parse(req.body);
 
     const existingCategory = await prisma.documentCategory.findUnique({
       where: { id },
@@ -136,6 +145,9 @@ export const updateDocumentCategory = async (
       }
     );
   } catch (error) {
+    if (error instanceof ZodError) {
+      return response.zodErrorResponse(res, error);
+    }
     return response.errorResponse(res, "Internal server error.");
   }
 };

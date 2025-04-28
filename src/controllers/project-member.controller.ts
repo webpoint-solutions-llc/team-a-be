@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import prisma from "../db/prisma";
 import * as response from "../utils/response";
+import { createProjectMemberSchema } from "../schema";
+import { ZodError } from "zod";
 
 export const addProjectMember = async (
   req: Request,
@@ -8,7 +10,9 @@ export const addProjectMember = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { userId, projectId, roleId } = req.body;
+    const { userId, projectId, roleId } = createProjectMemberSchema.parse(
+      req.body
+    );
 
     const existingMember = await prisma.projectMember.findUnique({
       where: {
@@ -38,7 +42,9 @@ export const addProjectMember = async (
       projectMember,
     });
   } catch (error) {
-    console.error(error);
+    if (error instanceof ZodError) {
+      return response.zodErrorResponse(res, error);
+    }
     response.errorResponse(res, "Internal server error.");
   }
 };

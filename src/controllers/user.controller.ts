@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { getHashedPassword, validatePassword } from "../utils/password";
 import * as generator from "../utils/generator";
-import { nodeEnv } from "../config";
 import prisma from "../db/prisma";
 import * as response from "../utils/response";
+import { createUserSchema, loginUserSchema } from "../schema";
 import { ZodError } from "zod";
 
 export const register = async (
@@ -12,7 +12,7 @@ export const register = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { email, password, fullName } = req.body;
+    const { email, password, fullName } = createUserSchema.parse(req.body);
 
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -38,6 +38,9 @@ export const register = async (
       fullName: newUser.fullName,
     });
   } catch (error) {
+    if (error instanceof ZodError) {
+      return response.zodErrorResponse(res, error);
+    }
     console.error(error);
     return response.errorResponse(res, "Internal server error.");
   }
@@ -49,7 +52,7 @@ export const login = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = loginUserSchema.parse(req.body);
 
     const user = await prisma.user.findUnique({
       where: { email },
@@ -73,20 +76,6 @@ export const login = async (
     if (error instanceof ZodError) {
       return response.zodErrorResponse(res, error);
     }
-    return response.errorResponse(res, "Internal server error.");
-  }
-};
-
-export const logout = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    res.clearCookie("token");
-    return response.successResponse(res, "Logged out successfully.");
-  } catch (error) {
-    console.error(error);
     return response.errorResponse(res, "Internal server error.");
   }
 };

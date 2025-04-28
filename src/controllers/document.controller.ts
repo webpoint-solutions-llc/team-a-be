@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import prisma from "../db/prisma";
 import * as response from "../utils/response";
+import { ZodError } from "zod";
+import { createDocumentSchema, updateDocumentSchema } from "../schema";
 
 export const createDocument = async (
   req: Request,
@@ -16,7 +18,7 @@ export const createDocument = async (
       visibility,
       createdById,
       categoryId,
-    } = req.body;
+    } = createDocumentSchema.parse(req.body);
 
     const category = await prisma.documentCategory.findUnique({
       where: { id: categoryId },
@@ -44,7 +46,9 @@ export const createDocument = async (
       document
     );
   } catch (error) {
-    console.error(error);
+    if (error instanceof ZodError) {
+      return response.zodErrorResponse(res, error);
+    }
     return response.errorResponse(res, "Internal server error.");
   }
 };
@@ -112,7 +116,8 @@ export const updateDocument = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const { title, description, link, tags, visibility, categoryId } = req.body;
+    const { title, description, link, tags, visibility, categoryId } =
+      updateDocumentSchema.parse(req.body);
 
     const existingDocument = await prisma.document.findUnique({
       where: { id },
@@ -148,7 +153,9 @@ export const updateDocument = async (
       updatedDocument
     );
   } catch (error) {
-    console.error(error);
+    if (error instanceof ZodError) {
+      return response.zodErrorResponse(res, error);
+    }
     return response.errorResponse(res, "Internal server error.");
   }
 };
